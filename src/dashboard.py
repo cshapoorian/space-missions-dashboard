@@ -10,7 +10,7 @@ CHART_CONFIG = {'displayModeBar': False}
 
 @st.cache_data
 def load_data():
-    for path in [Path(__file__).parent.parent / "data" / "space_missions.csv", Path("space_missions.csv")]:
+    for path in [Path(__file__).parent / "space_missions.csv", Path("space_missions.csv")]:
         if path.exists():
             df = pd.read_csv(path)
             df['Date'] = pd.to_datetime(df['Date'], errors='coerce')

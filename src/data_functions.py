@@ -12,7 +12,7 @@ def _load_data():
     if _df is not None:
         return _df
 
-    for p in [Path(__file__).parent.parent / "data" / "space_missions.csv", Path("space_missions.csv")]:
+    for p in [Path(__file__).parent / "space_missions.csv", Path("space_missions.csv")]:
         if p.exists():
             _df = pd.read_csv(p)
             _df['Date'] = pd.to_datetime(_df['Date'], errors='coerce')
