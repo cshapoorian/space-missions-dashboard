@@ -21,6 +21,19 @@ def load_data():
 
 def main():
     st.set_page_config(page_title="Space Missions", layout="wide")
+
+    # Hide deploy button, hamburger menu, footer, and reduce top padding
+    st.markdown("""
+        <style>
+            #MainMenu {visibility: hidden;}
+            header {visibility: hidden;}
+            footer {visibility: hidden;}
+            .stDeployButton {display: none;}
+            .block-container {padding-top: 1rem;}
+            section[data-testid="stSidebar"] > div:first-child {padding-top: 1rem;}
+        </style>
+    """, unsafe_allow_html=True)
+
     st.title("Space Missions Dashboard")
 
     df = load_data()
@@ -61,16 +74,46 @@ def main():
         st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
 
     with col2:
-        counts = data['MissionStatus'].value_counts()
-        fig = px.pie(counts, values=counts.values, names=counts.index)
-        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
+        if len(data) > 0:
+            counts = data['MissionStatus'].value_counts()
+            fig = px.pie(counts, values=counts.values, names=counts.index)
+            fig.update_layout(margin=dict(t=10, b=10, l=10, r=10))
+            st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
+        else:
+            st.info("No data available for status distribution.")
+
+    # Success rate over time
+    if len(data) > 0:
+        all_years = pd.DataFrame({'Year': range(year_range[0], year_range[1] + 1)})
+        yearly_stats = data.groupby('Year').agg(
+            total=('MissionStatus', 'count'),
+            successes=('MissionStatus', lambda x: (x == 'Success').sum())
+        ).reset_index()
+        yearly_stats['SuccessRate'] = yearly_stats.apply(
+            lambda row: round(row['successes'] / row['total'] * 100, 1) if row['total'] > 0 else None,
+            axis=1
+        )
+        yearly_stats = all_years.merge(yearly_stats, on='Year', how='left')
+        fig = px.line(yearly_stats.dropna(subset=['SuccessRate']), x='Year', y='SuccessRate', markers=True)
+        fig.update_layout(
+            title="Success Rate Over Time",
+            margin=dict(t=40, b=10, l=10, r=10),
+            yaxis_title="Success Rate (%)",
+            xaxis_title="Year",
+            yaxis=dict(range=[0, 105])
+        )
         st.plotly_chart(fig, use_container_width=True, config=CHART_CONFIG)
+    else:
+        st.info("No missions found for the selected filters.")
 
     # Data table
     st.subheader(f"Data ({len(data):,} missions)")
-    display = data[['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']].copy()
-    display['Date'] = display['Date'].dt.strftime('%Y-%m-%d')
-    st.dataframe(display.sort_values('Date', ascending=False), height=400, hide_index=True)
+    if len(data) > 0:
+        display = data[['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']].copy()
+        display['Date'] = display['Date'].dt.strftime('%Y-%m-%d')
+        st.dataframe(display.sort_values('Date', ascending=False), height=400, hide_index=True)
+    else:
+        st.dataframe(pd.DataFrame(columns=['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']), height=100, hide_index=True)
 
 
 if __name__ == "__main__":
