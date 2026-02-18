@@ -23,7 +23,7 @@ An interactive data visualization dashboard for exploring historical space missi
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/cshapoorian/space-missions-dashboard.git
    cd space-missions-dashboard
    ```
 
@@ -33,6 +33,14 @@ An interactive data visualization dashboard for exploring historical space missi
    ```
 
 3. Run the dashboard:
+
+   **Windows (Command Prompt or PowerShell):**
+   ```cmd
+   cd src
+   python -m streamlit run dashboard.py
+   ```
+
+   **Linux / macOS (Terminal):**
    ```bash
    cd src
    streamlit run dashboard.py
@@ -82,8 +90,13 @@ top = getTopCompaniesByMissionCount(3)
 
 ## Running Tests
 
+**Windows (Command Prompt or PowerShell):**
+```cmd
+python -m pytest tests/ -v
+```
+
+**Linux / macOS (Terminal):**
 ```bash
-# From project root
 pytest tests/ -v
 ```
 
