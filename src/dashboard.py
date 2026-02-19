@@ -1,5 +1,3 @@
-"""Interactive Streamlit dashboard for exploring historical space mission data."""
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
