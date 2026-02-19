@@ -206,12 +206,30 @@ def main():
 
     # Data table
     st.subheader(f"Data ({len(data):,} missions)")
+    show_price = st.checkbox("Show Mission Cost", value=True)
     if len(data) > 0:
-        display = data[['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']].copy()
+        columns = ['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']
+        if show_price:
+            columns.append('Price')
+        display = data[columns].copy()
         display['Date'] = display['Date'].dt.strftime('%Y-%m-%d')
-        st.dataframe(display.sort_values('Date', ascending=False), height=400, hide_index=True)
+        if show_price:
+            # Convert to numeric millions for proper sorting, keep NaN for missing
+            display['Price'] = pd.to_numeric(display['Price'], errors='coerce')
+            column_config = {
+                "Price": st.column_config.NumberColumn(
+                    "Price ($M)",
+                    format="$%.1fM"
+                )
+            }
+            st.dataframe(display.sort_values('Date', ascending=False), height=400, hide_index=True, column_config=column_config)
+        else:
+            st.dataframe(display.sort_values('Date', ascending=False), height=400, hide_index=True)
     else:
-        st.dataframe(pd.DataFrame(columns=['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']), height=100, hide_index=True)
+        columns = ['Mission', 'Company', 'Date', 'Rocket', 'Location', 'MissionStatus']
+        if show_price:
+            columns.append('Price')
+        st.dataframe(pd.DataFrame(columns=columns), height=100, hide_index=True)
 
 
 if __name__ == "__main__":
